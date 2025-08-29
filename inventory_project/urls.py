@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from core_api.views import IngredientViewSet, RecipeViewSet, IngredientRecipeViewSet, InventoryView
+from core_api.views import IngredientViewSet, RecipeViewSet, IngredientRecipeViewSet, InventoryView, download_csv
 
 router = routers.DefaultRouter()
 router.register(r'ingredients', IngredientViewSet)
