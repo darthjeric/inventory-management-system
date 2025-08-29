@@ -21,9 +21,8 @@ urlpatterns = [
     path('api/download/<str:model_name>/', download_csv, name='download-csv'),
     path('api/restock/<int:pk>/', RestockView.as_view(), name='restock'),
     path('api/brew/<int:recipe_id>/', BrewView.as_view(), name='brew'),
-    #path('api/register', register_user, name='register'),
-    path('api/register/', RegisterView.as_view, name='register'),
-    path('api/token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/register/', RegisterView.as_view(), name='register'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/logout/', LogoutView.as_view(), name='logout'),
 ]
