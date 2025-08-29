@@ -1,8 +1,10 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 #Ingredient Model
 class Ingredient(models.Model):
     #
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     quantity = models.DecimalField(decimal_places=2, max_digits=10)
     unit_of_measure = models.CharField(max_length=50)
@@ -15,6 +17,7 @@ class Ingredient(models.Model):
 #Recipe Model
 class Recipe(models.Model):
     #
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField()
     batch_size = models.TextField()
