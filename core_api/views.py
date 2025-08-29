@@ -4,6 +4,38 @@ from rest_framework.response import Response
 from .models import Ingredient, Recipe, IngredientRecipe
 from .serializers import IngredientSerializer, RecipeSerializer, IngredientRecipeSerializer
 
+import csv
+from django.http import HttpResponse
+
+def download_csv(request, model_name):
+    model_name = model_name.lower()
+
+    if model_name == 'ingredients':
+        model = Ingredient
+        queryset = Ingredient.objects.all()
+    elif model_name == 'recipes':
+        model = Recipe
+        queryset = Recipe.objects.all()
+    elif model_name == 'ingredient-recipes':
+        model = IngredientRecipe
+        queryset = IngredientRecipe.objects.all()
+    else:
+        return HttpResponse('Invalid model name', status=400)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{model_name}.csv"'
+
+    writer = csv.writer(response)
+
+    field_names = [field.name for field in model._meta.fields]
+    writer.writerow(field_names)
+
+    for obj in queryset:
+        row_data = [getattr(obj, field) for field in field_names]
+        writer.writerow(row_data)
+
+    return response
+
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer

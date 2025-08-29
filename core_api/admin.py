@@ -10,7 +10,7 @@ def export_as_csv(modeladmin, request, queryset):
 
     writer = csv.writer(response)
 
-    field_names = [field.name for field in querset.model._meta.fields]
+    field_names = [field.name for field in queryset.model._meta.fields]
     writer.writerow(field_names)
 
     for obj in queryset:

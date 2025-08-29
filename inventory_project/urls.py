@@ -12,4 +12,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/inventory/<int:recipe_id>/', InventoryView.as_view(), name='inventory-check'),
+    path('api/download/<str:model_name>/', download_csv, name='download-csv'),
 ]
