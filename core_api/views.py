@@ -46,9 +46,21 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
 
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class IngredientRecipeViewSet(viewsets.ModelViewSet):
     queryset = IngredientRecipe.objects.all()
@@ -57,7 +69,7 @@ class IngredientRecipeViewSet(viewsets.ModelViewSet):
 class InventoryView(APIView):
     def get(self, request, recipe_id, format=None):
         try:
-            recipe = Recipe.objects.get(pk=recipe_id)
+            recipe = Recipe.objects.get(pk=recipe_id, user=request.user)
         except Recipe.DoesNotExist:
             return Response({"error": "Recipe not found"}, status=404)
 
@@ -85,7 +97,7 @@ class InventoryView(APIView):
 
 class RestockView(APIView):
     def patch(self, request, pk, format=None):
-        ingredient = get_object_or_404(Ingredient, pk=pk)
+        ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
 
         restock_quantity = request.data.get('quantity')
 
@@ -103,7 +115,7 @@ class RestockView(APIView):
 class BrewView(APIView):
     def patch(self, request, recipe_id, format=None):
         try:
-            recipe = Recipe.objects.get(pk=recipe_id)
+            recipe = Recipe.objects.get(pk=recipe_id, user=request.user)
         except Recipe.DoesNotExist:
             return Response({"error": "Recipe not found"}, status=404)
 
