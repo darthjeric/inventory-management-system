@@ -1,8 +1,9 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Ingredient, Recipe, IngredientRecipe
-from .serializers import IngredientSerializer, RecipeSerializer, IngredientRecipeSerializer
+from .serializers import IngredientSerializer, RecipeSerializer, IngredientRecipeSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 
@@ -135,3 +136,11 @@ class BrewView(APIView):
         return Response({
             "message": f"Successfully brewed one batch of '{recipe.name}'. Inventory has been updated."
         })
+
+@api_view(['POST'])
+def register_user(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
