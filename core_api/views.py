@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,6 +12,8 @@ import csv
 from django.http import HttpResponse
 
 from django.db import transaction
+
+from django.contrib.auth.models import User
 
 def download_csv(request, model_name):
     model_name = model_name.lower()
@@ -163,3 +165,8 @@ class LogoutView(APIView):
 
     def post(self, request):
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = UserSerializer
