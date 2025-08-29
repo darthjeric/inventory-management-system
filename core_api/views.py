@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Ingredient, Recipe, IngredientRecipe
 from .serializers import IngredientSerializer, RecipeSerializer, IngredientRecipeSerializer
+from django.shortcuts import get_object_or_404
+from decimal import Decimal
 
 import csv
 from django.http import HttpResponse
@@ -76,3 +78,20 @@ class InventoryView(APIView):
             "batches_possible": int(max_brews),
             "batches_possible_exact": max_brews
         })
+
+class RestockView(APIView):
+    def patch(self, request, pk, format=None):
+        ingredient = get_object_or_404(Ingredient, pk=pk)
+
+        restock_quantity = request.data.get('quantity')
+
+        if restock_quantity is None or not isinstance(restock_quantity, (int, float, str)):
+            return Response({"error": "A 'quantity' field with a valid number is required."}, status=400)
+
+        restock_quantity = Decimal(restock_quantity)
+
+        ingredient.quantity += restock_quantity
+        ingredient.save()
+
+        serializer = IngredientSerializer(ingredient)
+        return Response(serializer.data)
