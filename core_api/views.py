@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import Ingredient, Recipe, IngredientRecipe
 from .serializers import IngredientSerializer, RecipeSerializer, IngredientRecipeSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
@@ -144,3 +145,9 @@ def register_user(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
