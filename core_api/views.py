@@ -9,6 +9,8 @@ from decimal import Decimal
 import csv
 from django.http import HttpResponse
 
+from django.db import transaction
+
 def download_csv(request, model_name):
     model_name = model_name.lower()
 
@@ -95,3 +97,41 @@ class RestockView(APIView):
 
         serializer = IngredientSerializer(ingredient)
         return Response(serializer.data)
+
+class BrewView(APIView):
+    def patch(self, request, recipe_id, format=None):
+        try:
+            recipe = Recipe.objects.get(pk=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response({"error": "Recipe not found"}, status=404)
+
+        # Get all required ingredients for the recipe in a single query
+        recipe_ingredients = IngredientRecipe.objects.filter(recipe=recipe)
+
+        if not recipe_ingredients:
+            return Response({"message": "This recipe has no ingredients defined."})
+
+        # Check for sufficient ingredients first (Crucial step!)
+        with transaction.atomic():
+            for recipe_ingredient in recipe_ingredients:
+                ingredient_on_hand = recipe_ingredient.ingredient
+                required_quantity = recipe_ingredient.required_quantity
+
+                # We need to add a way to handle unit conversions here
+                # For now, we assume units match.
+                if ingredient_on_hand.quantity < required_quantity:
+                    return Response({
+                        "error": f"Insufficient {ingredient_on_hand.name}. Need {required_quantity} {recipe_ingredient.unit_of_measure}, but only have {ingredient_on_hand.quantity} {ingredient_on_hand.unit_of_measure}."
+                    }, status=400)
+
+            # If all checks pass, subtract the quantities
+            for recipe_ingredient in recipe_ingredients:
+                ingredient_on_hand = recipe_ingredient.ingredient
+                required_quantity = recipe_ingredient.required_quantity
+
+                ingredient_on_hand.quantity -= required_quantity
+                ingredient_on_hand.save()  # Save the updated quantity to the database
+
+        return Response({
+            "message": f"Successfully brewed one batch of '{recipe.name}'. Inventory has been updated."
+        })
