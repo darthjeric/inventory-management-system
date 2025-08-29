@@ -15,6 +15,9 @@ from django.db import transaction
 
 from django.contrib.auth.models import User
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 def download_csv(request, model_name):
     model_name = model_name.lower()
 
@@ -166,6 +169,7 @@ class LogoutView(APIView):
     def post(self, request):
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
