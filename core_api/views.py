@@ -73,12 +73,12 @@ class IngredientRecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-
+        
         recipe_id = self.request.query_params.get('recipe')
 
         if recipe_id:
             queryset = queryset.filter(recipe_id=recipe_id)
-            
+
         return queryset
 
 
