@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Ingredient, Recipe, IngredientRecipe
 from .serializers import IngredientSerializer, RecipeSerializer, IngredientRecipeSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 import csv
 from django.http import HttpResponse
@@ -104,12 +104,10 @@ class RestockView(APIView):
     def patch(self, request, pk, format=None):
         ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
 
-        restock_quantity = request.data.get('quantity')
-
-        if restock_quantity is None or not isinstance(restock_quantity, (int, float, str)):
+        try:
+            restock_quantity = Decimal(request.data.get('quantity'))
+        except (InvalidOperation, TypeError):
             return Response({"error": "A 'quantity' field with a valid number is required."}, status=400)
-
-        restock_quantity = Decimal(restock_quantity)
 
         ingredient.quantity += restock_quantity
         ingredient.save()
