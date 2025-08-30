@@ -73,13 +73,46 @@ class IngredientRecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-        
+
         recipe_id = self.request.query_params.get('recipe')
 
         if recipe_id:
             queryset = queryset.filter(recipe_id=recipe_id)
 
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        recipe_id = request.data.get('recipe')
+        ingredient_id = request.data.get('ingredient')
+        required_quantity = request.data.get('required_quantity')
+
+        # Check if the ingredient already exists for this recipe
+        existing_ingredient = IngredientRecipe.objects.filter(
+            recipe_id=recipe_id,
+            ingredient_id=ingredient_id
+        ).first()
+
+        if existing_ingredient:
+            # If it exists, update the quantity
+            try:
+                # Add the new quantity to the existing one
+                existing_quantity = float(existing_ingredient.required_quantity)
+                new_quantity = float(required_quantity)
+                existing_ingredient.required_quantity = existing_quantity + new_quantity
+                existing_ingredient.save()
+
+                serializer = self.get_serializer(existing_ingredient)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except ValueError:
+                return Response({"error": "Invalid quantity format."}, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            # If it doesn't exist, create a new record
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class InventoryView(APIView):
